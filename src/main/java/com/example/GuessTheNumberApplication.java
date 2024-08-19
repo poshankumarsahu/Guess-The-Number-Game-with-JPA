@@ -10,7 +10,7 @@ public class GuessTheNumberApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(GuessTheNumberApplication.class, args);
-		System.out.println("Running Guess the number Game");
+		System.out.println("Running Guess the number Game Now bro really");
 	}
 
 }

@@ -29,7 +29,7 @@ public class MainController {
 	
 	@GetMapping(value="")
 	public ResponseEntity<String> home(){
-		String res = "Welcome Home!!!";
+		String res = "Welcome Home 	Bro!!!";
 		return new ResponseEntity<>(res,HttpStatus.OK);
 	}
 
