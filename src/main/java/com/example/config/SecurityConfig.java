@@ -49,7 +49,7 @@ public class SecurityConfig {
             )
            // .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .csrf(csrf -> csrf.disable())
-            .httpBasic(basic -> {});  // This enables HTTP Basic auth without using the deprecated method
+            .httpBasic(basic -> {});  // This enables HTTP Basic Auth without using the deprecated method
 
         return http.build();
     }
