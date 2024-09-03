@@ -34,8 +34,7 @@ public class MainServiceImpl implements MainService {
 				randomCalculator=false;
 				return "Congrats!! You selected the correct Number in "+ attempts + " attempts";
 			}
-		   }
-				
+		   }		
 	}
 
 	@Override

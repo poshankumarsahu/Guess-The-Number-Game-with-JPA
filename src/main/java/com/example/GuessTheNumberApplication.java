@@ -1,16 +1,18 @@
 package com.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-
 @SpringBootApplication
 public class GuessTheNumberApplication {
-
+	
+	private static final Logger logger = LoggerFactory.getLogger(GuessTheNumberApplication.class);
+	
 	public static void main(String[] args) {
 		SpringApplication.run(GuessTheNumberApplication.class, args);
-		System.out.println("Running Guess the number Game Now bro really");
+		logger.info("Running Guess The Number Game 2");
 	}
 
 }
