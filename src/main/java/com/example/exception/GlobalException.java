@@ -35,5 +35,5 @@ public class GlobalException {
 	        exInfo.setMsg("You do not have permission to access this resource.");
 	        return new ResponseEntity<>(exInfo, HttpStatus.FORBIDDEN);
 	    }*/
-
 }
+

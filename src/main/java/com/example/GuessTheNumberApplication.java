@@ -14,5 +14,4 @@ public class GuessTheNumberApplication {
 		SpringApplication.run(GuessTheNumberApplication.class, args);
 		logger.info("Running Guess The Number Game 2");
 	}
-
 }

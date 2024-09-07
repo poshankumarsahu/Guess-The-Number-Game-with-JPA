@@ -1,14 +1,24 @@
 package com.example.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.service.MainService;
+import com.example.dto.ScoreDTO;
+import com.example.entity.ScoreEntity;
+import com.example.entity.UserEntity;
+import com.example.repository.ScoreRepo;
+import com.example.repository.UserRepo;
+import com.example.service.GameService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -18,25 +28,51 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class MainController {
 
     @Autowired
-    private MainService mainService;
+    private GameService mainService;
+    
+    
 
+    // home page welcome controller
     @GetMapping(value="")
-    public ResponseEntity<String> home(){
+    public ResponseEntity<String> welcomePage(){
         String res = "Welcome to Guess The Number Game";
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
+    
+    @GetMapping(value="/home")
+    public ResponseEntity<String> homePage(){
+        String res = "This is Home Page";
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+    
+    // to save users
+    @PostMapping(value="/admin/add")
+    public ResponseEntity<String> saveUser(@RequestBody UserEntity user){
+    	String res = mainService.saveUser(user);
+    	return new ResponseEntity<>(res,HttpStatus.CREATED);
+    }
 
-    @GetMapping(value = "/{num}")
+    // controller to enter number by users to play the games 
+    @GetMapping(value = "/user/{num}")
     public ResponseEntity<String> numberInput(@PathVariable("num") Integer num){
         String res = mainService.getResult(num);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
+    
+    // controller for users game history from db
+    @GetMapping("/my-scores")
+    public ResponseEntity<List<ScoreDTO>> getMyScores(@AuthenticationPrincipal UserEntity currentUser) {
+        List<ScoreDTO> scores = mainService.getScoresForUser(currentUser);
+        return ResponseEntity.ok(scores);
+    }
 
+    // controller for admin
     @GetMapping(value="/admin")
     public ResponseEntity<String> adminMapping(){
         return ResponseEntity.ok("Welcome Admin!!!");
     }
 
+    // home page controller for users
     @GetMapping(value="/user")
     public ResponseEntity<String> userMapping(){
         String res = "Welcome User!!!";
