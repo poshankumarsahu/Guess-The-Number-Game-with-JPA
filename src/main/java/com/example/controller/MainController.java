@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class MainController {
 
     @Autowired
-    private GameService mainService;
+    private GameService gameService;
     
     
 
@@ -48,23 +49,26 @@ public class MainController {
     // to save users
     @PostMapping(value="/admin/add")
     public ResponseEntity<String> saveUser(@RequestBody UserEntity user){
-    	String res = mainService.saveUser(user);
+    	String res = gameService.saveUser(user);
     	return new ResponseEntity<>(res,HttpStatus.CREATED);
     }
 
     // controller to enter number by users to play the games 
-    @GetMapping(value = "/user/{num}")
-    public ResponseEntity<String> numberInput(@PathVariable("num") Integer num){
-        String res = mainService.getResult(num);
+    @GetMapping(value = "/game/{num}")
+    public ResponseEntity<String> numberInput(@PathVariable("num") Integer num, @AuthenticationPrincipal UserDetails userDetails) {
+        String res = gameService.getResult(num, userDetails);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
     
     // controller for users game history from db
     @GetMapping("/my-scores")
-    public ResponseEntity<List<ScoreDTO>> getMyScores(@AuthenticationPrincipal UserEntity currentUser) {
-        List<ScoreDTO> scores = mainService.getScoresForUser(currentUser);
+    public ResponseEntity<List<ScoreDTO>> getMyScores(@AuthenticationPrincipal UserDetails userDetails) {
+        List<ScoreDTO> scores = gameService.getScoresForUser(userDetails);
         return ResponseEntity.ok(scores);
     }
+    
+    
+    
 
     // controller for admin
     @GetMapping(value="/admin")

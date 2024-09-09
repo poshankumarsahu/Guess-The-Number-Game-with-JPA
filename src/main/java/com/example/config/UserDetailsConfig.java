@@ -20,8 +20,10 @@ public class UserDetailsConfig implements UserDetailsService {
 
 	    @Override
 	    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-	        Optional<UserEntity> user = userRepo.findByUsername(username);
-	        if (user.isPresent()) {
+	      //  Optional<UserEntity> user = userRepo.findByUsername(username);
+	    	UserEntity user = userRepo.findByUsername(username)
+	                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+	       /* if (user.isPresent()) {
 	            UserEntity userObj = user.get();
 	            return User.builder()
 	                .username(userObj.getUsername())
@@ -30,7 +32,13 @@ public class UserDetailsConfig implements UserDetailsService {
 	                .build();
 	        } else {
 	            throw new UsernameNotFoundException("User not found: " + username);
-	        }
+	        }*/
+	        
+	        return User.builder()
+	                .username(user.getUsername())
+	                .password(user.getPassword())
+	                .roles(user.getRole())
+	                .build();
 	}
 
 }

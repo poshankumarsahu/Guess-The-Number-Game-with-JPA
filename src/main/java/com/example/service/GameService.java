@@ -2,6 +2,7 @@ package com.example.service;
 
 import java.util.List;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.example.dto.ScoreDTO;
@@ -10,12 +11,12 @@ import com.example.entity.UserEntity;
 @Service
 public interface GameService {
 	
-	public String getResult(Integer num);
+	String getResult(Integer num, UserDetails userDetails);
 	
-	public Integer randomNumber();
+	Integer randomNumber();
 
-	public String saveUser(UserEntity user);
+	String saveUser(UserEntity user);
 
-	public List<ScoreDTO> getScoresForUser(UserEntity currentUser);
+	List<ScoreDTO> getScoresForUser(UserDetails userDetails);
 
 }
