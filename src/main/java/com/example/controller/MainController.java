@@ -31,7 +31,6 @@ public class MainController {
     @Autowired
     private GameService gameService;
     
-    
 
     // home page welcome controller
     @GetMapping(value="")
