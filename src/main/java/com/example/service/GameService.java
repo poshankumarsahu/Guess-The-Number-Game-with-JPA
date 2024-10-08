@@ -1,22 +1,24 @@
 package com.example.service;
 
+import com.example.dto.GuessResultDTO;
+import com.example.dto.ScoreDTO;
+
 import java.util.List;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
-import com.example.dto.ScoreDTO;
-import com.example.entity.UserEntity;
-
-@Service
 public interface GameService {
-	
-	String getResult(Integer num, UserDetails userDetails);
-	
-	Integer randomNumber();
 
-	String saveUser(UserEntity user);
+    /**
+     * Process a user's guess and return the result.
+     * 
+     * @param guess The number guessed by the user
+     * @return GuessResultDTO containing the result of the guess
+     */
+    GuessResultDTO makeGuess(Integer guess);
 
-	List<ScoreDTO> getScoresForUser(UserDetails userDetails);
-
+    /**
+     * Retrieve the scores for the current user.
+     * 
+     * @return List of ScoreDTO objects representing the user's scores
+     */
+    List<ScoreDTO> getScoresForCurrentUser();
 }
