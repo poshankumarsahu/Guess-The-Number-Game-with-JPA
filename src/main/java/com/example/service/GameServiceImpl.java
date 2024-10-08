@@ -1,116 +1,99 @@
 package com.example.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
+import com.example.dto.GuessResultDTO;
 import com.example.dto.ScoreDTO;
 import com.example.entity.ScoreEntity;
 import com.example.entity.UserEntity;
 import com.example.exception.InputOutOfRangeException;
-import com.example.repository.ScoreRepo;
-import com.example.repository.UserRepo;
+import com.example.repository.ScoreRepository;
+import com.example.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class GameServiceImpl implements GameService {
 
-	@Autowired
-	private UserRepo userRepo;
+    private static final Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    private final ScoreRepository scoreRepository;
+    private final UserRepository userRepository;
+    private final Random random = new Random();
 
-	@Autowired
-	private ScoreRepo scoreRepo;
+    private Integer numberToGuess;
+    private Integer attempts;
 
-	private boolean randomCalculator = false;
-	private Integer random;
-	private Integer attempts = 0;
+    public GameServiceImpl(ScoreRepository scoreRepository, UserRepository userRepository) {
+        this.scoreRepository = scoreRepository;
+        this.userRepository = userRepository;
+        this.attempts = 0;
+    }
 
-	@Override
-    public String getResult(Integer num, UserDetails userDetails) {
-        if(num < 0 || num > 100) {
-            throw new InputOutOfRangeException("Please Enter number between 0 to 100");
-        } else {
+    @Override
+    public GuessResultDTO makeGuess(Integer guess) {
+        try {
+            if (attempts == 0) {
+                numberToGuess = generateRandomNumber();
+                logger.info("New game started. Number to guess: {}", numberToGuess);
+            }
+
+            if (guess == null) {
+                throw new IllegalArgumentException("Guess cannot be null");
+            }
+
+            if (guess < 1 || guess > 100) {
+                throw new InputOutOfRangeException("Please enter a number between 1 and 100.");
+            }
+
             attempts++;
-            
-            if(randomCalculator == false) {
-                random = randomNumber();
-                randomCalculator = true;
-            }
-            
-            if(num < random) {
-                return "Input Number is less than random number";
-            } else if(num > random) {
-                return "Input Number is greater than random number";
-            } else {
-                randomCalculator = false;
-                
-                // Save score for the authenticated user
-                UserEntity currentUser = userRepo.findByUsername(userDetails.getUsername())
-                    .orElse(null);
-                
-                if (currentUser != null && currentUser.getUserid() != null) {
-                    ScoreEntity score = new ScoreEntity();
-                    score.setUser(currentUser);
-                    score.setScore(attempts);
-                    try {
-                        scoreRepo.save(score);
-                        System.out.println("Score saved successfully");
-                    } catch (Exception e) {
-                        System.err.println("Error saving score: " + e.getMessage());
-                    }
-                } else {
-                    System.out.println("Warning: Attempt to save score for null or transient user");
-                }
-                
-                String result = "Congrats!! You selected the correct Number in " + attempts + " attempts";
-                attempts = 0; // Reset attempts for the next game
+            logger.info("Attempt {}: User guessed {}", attempts, guess);
+
+            if (guess.equals(numberToGuess)) {
+                String message = "Congratulations! You guessed the number " + numberToGuess + " in " + attempts + " attempts.";
+                saveScore();
+                GuessResultDTO result = new GuessResultDTO(message, true, attempts);
+                attempts = 0;
+                logger.info("Game won. {}", message);
                 return result;
+            } else if (guess < numberToGuess) {
+                return new GuessResultDTO("The number is higher. Try again.", false, attempts);
+            } else {
+                return new GuessResultDTO("The number is lower. Try again.", false, attempts);
             }
-		}
-	}
+        } catch (Exception e) {
+            logger.error("Error in makeGuess: ", e);
+            throw new RuntimeException("An error occurred while processing your guess", e);
+        }
+    }
 
-	@Override
-	public Integer randomNumber() {
-		// TODO Auto-generated method stub
-		Integer random = (int) ((Math.random() * 100) + 1);
-		return random;
-	}
+    @Override
+    public List<ScoreDTO> getScoresForCurrentUser() {
+        UserEntity user = getCurrentUser();
+        return scoreRepository.findByUserOrderByScoreAsc(user).stream()
+                .map(score -> new ScoreDTO(score.getId(), score.getScore()))
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public String saveUser(UserEntity user) {
-		// TODO Auto-generated method stub
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		UserEntity res = userRepo.save(user);
-		return "User saved with id : " + res.getUserid();
-	}
+    private void saveScore() {
+        UserEntity user = getCurrentUser();
+        ScoreEntity score = new ScoreEntity();
+        score.setUser(user);
+        score.setScore(attempts);
+        scoreRepository.save(score);
+    }
 
-	@Override
-	 public List<ScoreDTO> getScoresForUser(UserDetails userDetails){
-		// TODO Auto-generated method stub
+    private Integer generateRandomNumber() {
+        return random.nextInt(100) + 1;
+    }
 
-		UserEntity currentUser = userRepo.findByUsername(userDetails.getUsername())
-	            .orElse(null);
-	        
-	        if (currentUser == null) {
-	            return new ArrayList<>(); // Return empty list if user not found
-	        }
-	        
-	        List<ScoreEntity> scores = scoreRepo.findByUserOrderByScoreIdDesc(currentUser);
-	        
-	        List<ScoreDTO> scoreDTOs = new ArrayList<>();
-	        for (ScoreEntity score : scores) {
-	            if (score != null) {
-	                ScoreDTO dto = new ScoreDTO(score.getScoreId(), score.getScore());
-	                scoreDTOs.add(dto);
-	            }
-	        }
-	        return scoreDTOs;
-	    }
-
+    private UserEntity getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }

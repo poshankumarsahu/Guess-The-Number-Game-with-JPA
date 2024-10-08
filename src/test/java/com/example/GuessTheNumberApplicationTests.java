@@ -8,6 +8,7 @@ class GuessTheNumberApplicationTests {
 
 	@Test
 	void contextLoads() {
+		
 	}
 
 }
